@@ -16,6 +16,8 @@ protection:
     sessionDuration: 120 # Any value less than or equal to 0 will be marked as an unlimited session, even after restart (Value in seconds)
     teleportation: lobby
     message: "&aYou have been AutoLogged in!"
+  consoleFilter: true
+
   # More soon. Have suggestions? Message me on discord! CZY BINKIE#2620
 
 sessionRules:
@@ -26,6 +28,7 @@ sessionRules:
   canDamage: false
   canGetHungry: false
   canGetDamaged: false
+  canExecuteOtherCommands: false
 
 login:
   teleportation: login

@@ -2,6 +2,7 @@ package me.pebbleprojects.pebbleloginbeta;
 
 import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 import me.pebbleprojects.pebbleloginbeta.listeners.AsyncPlayerPreLogin;
+import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,11 +16,13 @@ public final class PebbleLogin extends JavaPlugin {
         loaded = false;
         final Server server = getServer();
         server.getPluginManager().registerEvents(new AsyncPlayerPreLogin(this), this);
-        final ConsoleCommandSender console = server.getConsoleSender();
-        console.sendMessage("§eLoading §bPebbleLogin§f-§bBETA§e...");
-        new Handler(this);
-        console.sendMessage("§aLoaded §bPebbleLogin§f-§bBETA");
-        loaded = true;
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            final ConsoleCommandSender console = server.getConsoleSender();
+            console.sendMessage("§eLoading §bPebbleLogin§f-§bBETA§e...");
+            new Handler(this);
+            console.sendMessage("§aLoaded §bPebbleLogin§f-§bBETA");
+            loaded = true;
+        }, 20);
     }
 
     @Override

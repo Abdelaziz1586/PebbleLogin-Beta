@@ -62,15 +62,17 @@ public class Handler {
         pm.registerEvents(new PlayerQuit(this), main);
         pm.registerEvents(new BlockBreak(this), main);
         pm.registerEvents(new BlockPlace(this), main);
-        pm.registerEvents(new PlayerMove(this), main);
         pm.registerEvents(new EntityDamage(this), main);
         pm.registerEvents(new AsyncPlayerChat(this), main);
         pm.registerEvents(new FoodLevelChange(this), main);
+        pm.registerEvents(new PlayerCommandPreprocess(this), main);
 
         final Commands commands = new Commands(this);
         Objects.requireNonNull(main.getCommand("login")).setExecutor(commands);
         Objects.requireNonNull(main.getCommand("register")).setExecutor(commands);
         Objects.requireNonNull(main.getCommand("pebblelogin")).setExecutor(commands);
+
+        new ConsoleFilter(this);
     }
 
     public void updateConfig() {
@@ -117,8 +119,8 @@ public class Handler {
         return runnable;
     }
 
-    public final BukkitRunnable runTaskTimer(final BukkitRunnable runnable, final int delay) {
-        runnable.runTaskTimer(main, 0, delay*20L);
+    public final BukkitRunnable runTaskTimer(final BukkitRunnable runnable, final double delay) {
+        runnable.runTaskTimer(main, 0, (long) (delay*20));
         return runnable;
     }
 

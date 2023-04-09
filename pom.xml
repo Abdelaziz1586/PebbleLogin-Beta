@@ -6,6 +6,7 @@
 
     <groupId>me.pebbleprojects</groupId>
     <artifactId>PebbleLogin-Beta</artifactId>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>PebbleLogin-Beta</name>
@@ -74,6 +75,12 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

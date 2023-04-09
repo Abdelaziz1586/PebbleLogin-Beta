@@ -6,14 +6,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
+import java.util.UUID;
 
 public class Session {
 
+    private UUID uuid;
     private Player player;
-    private Handler handler;
     private Random random;
+    private Handler handler;
+    private SessionsHandler sessionsHandler;
     private int captcha, captchaMaxNumber, WCMaxTries, IAMaxTries, NMPMaxTries, IPMaxTries, WCTries, IATries, NMPTries, IPTries;
-    private BukkitRunnable messageRunnable, timeoutRunnable;
+    private BukkitRunnable messageRunnable, timeoutRunnable, moveRunnable;
     private String sessionType, WC, kickWC, IA, kickIA, NMP, kickNMP, IP, kickIP, C;
 
     public Session(final Player player, final Handler handler) {
@@ -22,9 +25,12 @@ public class Session {
             random = new Random();
             sessionType = handler.getData("playerData." + player.getUniqueId() + ".password") == null ? "register" : "login";
             this.handler = handler;
+            uuid = player.getUniqueId();
+            sessionsHandler = handler.getSessionsHandler();
 
             setupCaptcha();
             setupTimeout();
+            setupMovement();
             setupCompleted();
             setupRepetitiveMessage();
             setupIncorrectPassword();
@@ -158,14 +164,17 @@ public class Session {
             messageRunnable.cancel();
             messageRunnable = null;
         }
+        if (moveRunnable != null) {
+            moveRunnable.cancel();
+            moveRunnable = null;
+        }
 
-        handler.getSessionsHandler().deleteSession(player.getUniqueId());
-
+        sessionsHandler.deleteSession(uuid);
         captcha = captchaMaxNumber = WCMaxTries = IAMaxTries = NMPMaxTries = IPMaxTries = WCTries = IATries = NMPTries = IPTries = 0;
         sessionType = WC = kickWC = IA = kickIA = NMP = kickNMP = IP = kickIP = C = null;
 
-        handler = null;
         player = null;
+        handler = null;
 
         System.gc();
         System.runFinalization();
@@ -184,6 +193,18 @@ public class Session {
                     player.sendMessage(handler.getConfig(sessionType + ".repetitiveMessage.message", true).toString().replace("%captcha%", String.valueOf(captcha)));
                 }
             }, Integer.parseInt(handler.getConfig(sessionType + ".repetitiveMessage.every", false).toString()));
+        }
+    }
+
+    private void setupMovement() {
+        if (!Boolean.parseBoolean(handler.getConfig("sessionRules.canMove", false).toString())) {
+            final Location location = player.getLocation();
+            moveRunnable = handler.runTaskTimer(new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (!player.getLocation().equals(location)) player.teleport(location);
+                }
+            }, 0.05);
         }
     }
 
