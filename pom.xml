@@ -6,7 +6,7 @@
 
     <groupId>me.pebbleprojects</groupId>
     <artifactId>PebbleLogin-Beta</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
     <name>PebbleLogin-Beta</name>

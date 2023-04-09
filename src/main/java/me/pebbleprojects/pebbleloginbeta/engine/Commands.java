@@ -22,7 +22,6 @@ public class Commands implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, final @NotNull Command command, final @NotNull String label, final String[] args) {
         handler.runTask(() -> {
             if (sender instanceof Player player) {
-
                 final String s = command.getName().toLowerCase();
                 if (s.equals("pebblelogin")) {
                     if (player.hasPermission(handler.getConfig("mainCommand.permission", false).toString())) {
