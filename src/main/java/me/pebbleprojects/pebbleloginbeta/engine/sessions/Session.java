@@ -159,6 +159,8 @@ public class Session {
             messageRunnable = null;
         }
 
+        handler.getSessionsHandler().deleteSession(player.getUniqueId());
+
         captcha = captchaMaxNumber = WCMaxTries = IAMaxTries = NMPMaxTries = IPMaxTries = WCTries = IATries = NMPTries = IPTries = 0;
         sessionType = WC = kickWC = IA = kickIA = NMP = kickNMP = IP = kickIP = C = null;
 

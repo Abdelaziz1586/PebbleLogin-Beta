@@ -45,6 +45,10 @@ public class SessionsHandler {
         }
     }
 
+    public void deleteSession(final UUID uuid) {
+        sessions.remove(uuid);
+    }
+
     public final boolean isSessionSaved(final Player player) {
         final UUID uuid = player.getUniqueId();
         final String IP = handler.getHashString(Objects.requireNonNull(player.getAddress()).getAddress().toString().replace("/", ""));
