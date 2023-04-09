@@ -1,0 +1,102 @@
+
+# Config Guide #
+# key:
+#   - teleportation (The location where the player will be teleported to after/during the session)
+#     Types of teleportation: same, saved, lobby, login
+
+otherKickMessages:
+  error: "&cThe server ran into an error while creating a session for you!"
+
+protection:
+  hashData:
+    enabled: true # Strongly recommended, editing this option will require you to reset your data.yml!
+    type: SHA-256
+  autologin:
+    enabled: false
+    sessionDuration: 120 # Any value less than or equal to 0 will be marked as an unlimited session, even after restart (Value in seconds)
+    teleportation: lobby
+    message: "&aYou have been AutoLogged in!"
+  # More soon. Have suggestions? Message me on discord! CZY BINKIE#2620
+
+sessionRules:
+  canMove: true # May cause some unnoticeable lag in a low-end server, Default OFF
+  canChat: false
+  canBreak: false
+  canPlace: false
+  canDamage: false
+  canGetHungry: false
+  canGetDamaged: false
+
+login:
+  teleportation: login
+  repetitiveMessage:
+    enabled: true
+    every: 5 # In seconds
+    message: "&c/login <password>"
+  timeout:
+    enabled: true
+    time: 60 # In seconds
+    kick-message: "&cTimed out"
+  incorrectArguments:
+    tries:
+      enabled: true
+      tries: 5
+      kick-message: "&cToo many attempts"
+    message: "&c/login <password>"
+  incorrectPassword:
+    tries:
+      enabled: true
+      tries: 3
+      kick-message: "&cToo many attempts"
+    message: "&cYou've entered an incorrect password!"
+  completed:
+    teleportation: lobby
+    message: "&aYou have successfully logged in!"
+
+
+register:
+  teleportation: login
+  repetitiveMessage:
+    enabled: true
+    every: 5 # In seconds
+    message: "&c/register <password> <repeat password> %captcha%" # Remove the "%captcha%" variable if you'll disable it in the option down below.
+  captcha:
+    enabled: true
+    maxNumber: 999999
+    tries:
+      enabled: true
+      tries: 3
+      kick-message: "&cToo many attempts"
+    incorrectMessage: "&cYou have entered the wrong captcha, your new captcha is &e%captcha%"
+  timeout:
+    enabled: true
+    time: 60 # In seconds
+    kick-message: "&cTimed out"
+  incorrectArguments: # Command is not completed
+    tries:
+      enabled: false
+      tries: 5
+      kick-message: "&cToo many attempts"
+    message: "&c/register <password> <repeat password>"
+  nonMatchingPasswords:
+    tries:
+      enabled: false
+      tries: 5
+      kick-message: "&cToo many attempts"
+    message: "&cBoth passwords should match each other (case sensitive)"
+  completed:
+    teleportation: lobby
+    message: "&aYou have successfully been registered!"
+
+mainCommand:
+  permission: pebblelogin.admin
+  messages:
+    reload: "&aReloaded all plugin configurations!"
+    lobbySet: "&aLobby location has been set to your current location!"
+    loginSet: "&aLogin location has been set to your current location!"
+    invalidArgument: "&cInvalid argument! The only valid arguments at the moment are 'setLobby', 'setLogin' and 'reload'"
+
+commandMessages:
+  not_in_session: "&cYou're currently not in any session!"
+  not_in_login_session: "&cYou're not logged in! type /register"
+  not_in_register_session: "&cYou're already registered! type /login"

@@ -1,0 +1,13 @@
+name: PebbleLogin-Beta
+version: '${project.version}'
+main: me.pebbleprojects.pebbleloginbeta.PebbleLogin
+api-version: 1.19
+authors: [PebbleProjects]
+description: An advanced login system for users who don't have money to pay for one.
+commands:
+  pebblelogin:
+    description: Main command for PebbleLogin
+  register:
+    description: Register command for PebbleLogin
+  login:
+    description: Login command for PebbleLogin
