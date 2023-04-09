@@ -1,5 +1,5 @@
 name: PebbleLogin-Beta
-version: '${project.version}'
+version: '1.0.1'
 main: me.pebbleprojects.pebbleloginbeta.PebbleLogin
 api-version: 1.19
 authors: [PebbleProjects]
