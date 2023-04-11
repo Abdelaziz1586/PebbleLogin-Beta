@@ -20,7 +20,7 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, final @NotNull Command command, final @NotNull String label, final String[] args) {
-        handler.runTask(() -> {
+        new Thread(() -> {
             if (sender instanceof Player player) {
                 final String s = command.getName().toLowerCase();
                 if (s.equals("pebblelogin")) {
@@ -65,7 +65,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
             sender.sendMessage("§cAll of this plugin's commands can't be executed by console.");
-        });
+        }).start();
         return false;
     }
 }

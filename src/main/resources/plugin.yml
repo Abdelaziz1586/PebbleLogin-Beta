@@ -3,7 +3,7 @@ version: '1.0.4'
 main: me.pebbleprojects.pebbleloginbeta.PebbleLogin
 api-version: 1.19
 authors: [PebbleProjects]
-description: An advanced login system for users who don't have money to pay for one.
+description: An advanced login system for Bukkit server.
 commands:
   pebblelogin:
     description: Main command for PebbleLogin

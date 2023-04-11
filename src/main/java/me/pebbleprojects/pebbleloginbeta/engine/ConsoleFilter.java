@@ -10,6 +10,8 @@ import org.apache.logging.log4j.message.Message;
 
 public class ConsoleFilter implements Filter {
 
+    private boolean started;
+    private boolean stopped;
     private final Handler handler;
 
     public ConsoleFilter(final Handler handler) {
@@ -19,7 +21,7 @@ public class ConsoleFilter implements Filter {
 
     private Result getResult(final String message) {
         if (Boolean.parseBoolean(handler.getConfig("protection.consoleFilter", false).toString())) {
-            return message.contains("issued server command: /login") || message.contains("issued server command: /register") ? Result.DENY : Result.NEUTRAL;
+            if (message.contains("issued server command: /login") || message.contains("issued server command: /register")) return Result.DENY;
         }
         return Result.NEUTRAL;
     }
@@ -116,21 +118,23 @@ public class ConsoleFilter implements Filter {
 
     @Override
     public void start() {
-
+        started = true;
+        stopped = false;
     }
 
     @Override
     public void stop() {
-
+        stopped = true;
+        started = false;
     }
 
     @Override
     public boolean isStarted() {
-        return false;
+        return started;
     }
 
     @Override
     public boolean isStopped() {
-        return false;
+        return stopped;
     }
 }

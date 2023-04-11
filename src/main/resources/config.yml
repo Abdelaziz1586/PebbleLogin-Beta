@@ -17,7 +17,6 @@ protection:
     teleportation: lobby
     message: "&aYou have been AutoLogged in!"
   consoleFilter: true
-
   # More soon. Have suggestions? Message me on discord! CZY BINKIE#2620
 
 sessionRules:

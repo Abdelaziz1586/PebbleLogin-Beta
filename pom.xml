@@ -11,7 +11,7 @@
 
     <name>PebbleLogin-Beta</name>
 
-    <description>An advanced login system for users who don't have money to pay for one.</description>
+    <description>An advanced login system for Bukkit server.</description>
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

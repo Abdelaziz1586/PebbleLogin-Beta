@@ -2,11 +2,8 @@ package me.pebbleprojects.pebbleloginbeta.engine.sessions;
 
 import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class SessionsHandler {
 
@@ -34,12 +31,12 @@ public class SessionsHandler {
                 return;
             }
             savedSessions.put(uuid, IP);
-            handler.runTaskLater(new BukkitRunnable() {
+            new Thread(() -> new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     savedSessions.remove(uuid);
                 }
-            }, i);
+            }, i * 1000L)).start();
         } catch (final Exception exception) {
             handler.sendSessionConsoleMessage("§cCouldn't save this session\n\n" + exception.getMessage(), player.getName(), true);
         }

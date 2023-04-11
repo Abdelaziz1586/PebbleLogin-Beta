@@ -48,12 +48,11 @@ public class Session {
     public void completeSession(final String[] args) {
         try {
             if (sessionType.equals("register")) {
-
                 if (args.length <= 1) {
                     if (kickIA != null) {
                         IATries++;
                         if (IATries >= IAMaxTries) {
-                            player.kickPlayer(kickIA);
+                            handler.runTask(() -> player.kickPlayer(kickIA));
                             return;
                         }
                     }
@@ -65,7 +64,7 @@ public class Session {
                     if (kickNMP != null) {
                         NMPTries++;
                         if (NMPTries >= NMPMaxTries) {
-                            player.kickPlayer(kickNMP);
+                            handler.runTask(() -> player.kickPlayer(kickNMP));
                             return;
                         }
                     }
@@ -79,18 +78,18 @@ public class Session {
                             if (kickIA != null) {
                                 IATries++;
                                 if (IATries >= IAMaxTries) {
-                                    player.kickPlayer(kickIA);
+                                    handler.runTask(() -> player.kickPlayer(kickIA));
                                     return;
                                 }
                             }
                             player.sendMessage(IA);
                             return;
                         }
-                        if (Integer.parseInt(args[2]) != this.captcha) {
+                        if (Integer.parseInt(args[2]) != captcha) {
                             if (kickWC != null) {
                                 WCTries++;
                                 if (WCTries >= WCMaxTries) {
-                                    player.kickPlayer(kickWC);
+                                    handler.runTask(() -> player.kickPlayer(kickWC));
                                     return;
                                 }
                             }
@@ -101,7 +100,7 @@ public class Session {
                         if (kickWC != null) {
                             WCTries++;
                             if (WCTries >= WCMaxTries) {
-                                player.kickPlayer(kickWC);
+                                handler.runTask(() -> player.kickPlayer(kickWC));
                                 return;
                             }
                         }
@@ -113,13 +112,11 @@ public class Session {
                 handler.writeData("playerData." + player.getUniqueId() + ".password", handler.getHashString(args[1]));
 
             } else if (sessionType.equals("login")) {
-
-
                 if (args.length == 0) {
                     if (kickIA != null) {
                         IATries++;
                         if (IATries >= IAMaxTries) {
-                            player.kickPlayer(kickIA);
+                            handler.runTask(() -> player.kickPlayer(kickIA));
                             return;
                         }
                     }
@@ -131,7 +128,7 @@ public class Session {
                     if (kickIP != null) {
                         IPTries++;
                         if (IPTries >= IPMaxTries) {
-                            player.kickPlayer(kickIP);
+                            handler.runTask(() -> player.kickPlayer(kickIP));
                             return;
                         }
                     }
@@ -142,10 +139,11 @@ public class Session {
 
             player.sendMessage(C);
             teleportTo(handler.getConfig(sessionType + ".completed.teleportation", false).toString());
-            if (Boolean.parseBoolean(handler.getConfig("protection.autologin.enabled", false).toString())) handler.getSessionsHandler().saveSession(player);
+            if (Boolean.parseBoolean(handler.getConfig("protection.autologin.enabled", false).toString()))
+                handler.getSessionsHandler().saveSession(player);
             destroySession();
         } catch (final Exception ex) {
-            player.kickPlayer(handler.getConfig("otherKickMessages.error", true).toString());
+            handler.runTask(() -> player.kickPlayer(handler.getConfig("otherKickMessages.error", true).toString()));
             ex.printStackTrace();
             destroySession();
         }
