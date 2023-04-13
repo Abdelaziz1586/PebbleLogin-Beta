@@ -10,45 +10,39 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 public class PlayerJoin implements Listener {
 
-    private final Handler handler;
-    private final SessionsHandler sessionsHandler;
-
-    public PlayerJoin(final Handler handler) {
-        this.handler = handler;
-        sessionsHandler = handler.getSessionsHandler();
-    }
-
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        handler.runTask(() -> {
+        new Thread(() -> {
             final Player player = event.getPlayer();
-            if (sessionsHandler.isSessionSaved(player)) {
-                teleportTo(player, handler.getConfig("protection.autologin.teleportation", false).toString());
-                player.sendMessage(handler.getConfig("protection.autologin.message", true).toString());
+            if (SessionsHandler.INSTANCE.isSessionSaved(player)) {
+                teleportTo(player, Handler.INSTANCE.getConfig("protection.autologin.teleportation", false).toString());
+                player.sendMessage(Handler.INSTANCE.getConfig("protection.autologin.message", true).toString());
                 return;
             }
-            sessionsHandler.createSession(event.getPlayer());
-        });
+            SessionsHandler.INSTANCE.createSession(event.getPlayer());
+        }).start();
     }
 
     private void teleportTo(final Player player, final String teleportation) {
-        Object o;
-        if (teleportation.equals("lobby")) {
-            o = handler.getData("locations.lobby");
-            if (o instanceof Location) player.teleport((Location) o);
-            return;
-        }
+        new Thread(() -> {
+            Object o;
+            if (teleportation.equals("lobby")) {
+                o = Handler.INSTANCE.getData("locations.lobby");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+                return;
+            }
 
-        if (teleportation.equals("login")) {
-            o = handler.getData("locations.login");
-            if (o instanceof Location) player.teleport((Location) o);
-            return;
-        }
+            if (teleportation.equals("login")) {
+                o = Handler.INSTANCE.getData("locations.login");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+                return;
+            }
 
-        if (teleportation.equals("saved")) {
-            o = handler.getData("playerData." + player.getUniqueId() + ".savedLocation");
-            if (o instanceof Location) player.teleport((Location) o);
-        }
+            if (teleportation.equals("saved")) {
+                o = Handler.INSTANCE.getData("playerData." + player.getUniqueId() + ".savedLocation");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+            }
+        }).start();
     }
 
 }

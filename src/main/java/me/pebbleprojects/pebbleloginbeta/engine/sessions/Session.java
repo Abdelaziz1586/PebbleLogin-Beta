@@ -1,47 +1,49 @@
 package me.pebbleprojects.pebbleloginbeta.engine.sessions;
 
+import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
 import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
-import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-public class Session {
+public class Session implements Runnable {
 
-    private UUID uuid;
-    private Player player;
     private Random random;
-    private Handler handler;
-    private SessionsHandler sessionsHandler;
-    private int captcha, captchaMaxNumber, WCMaxTries, IAMaxTries, NMPMaxTries, IPMaxTries, WCTries, IATries, NMPTries, IPTries;
-    private BukkitRunnable messageRunnable, timeoutRunnable, moveRunnable;
+    private final Player player;
+    private boolean canSeeOthers, canOthersSee;
+    private ScheduledFuture<?> messageRunnable, timeoutRunnable, moveRunnable;
     private String sessionType, WC, kickWC, IA, kickIA, NMP, kickNMP, IP, kickIP, C;
+    private int captcha, captchaMaxNumber, WCMaxTries, IAMaxTries, NMPMaxTries, IPMaxTries, WCTries, IATries, NMPTries, IPTries;
 
-    public Session(final Player player, final Handler handler) {
+    public Session(final Player player) {
+        this.player = player;
+        new Thread(this).start();
+    }
+
+    @Override
+    public void run() {
         try {
-            this.player = player;
             random = new Random();
-            sessionType = handler.getData("playerData." + player.getUniqueId() + ".password") == null ? "register" : "login";
-            this.handler = handler;
-            uuid = player.getUniqueId();
-            sessionsHandler = handler.getSessionsHandler();
+            sessionType = Handler.INSTANCE.getData("playerData." + player.getUniqueId() + ".password") == null ? "register" : "login";
 
             setupCaptcha();
             setupTimeout();
-            setupMovement();
             setupCompleted();
             setupRepetitiveMessage();
             setupIncorrectPassword();
             setupIncorrectArguments();
             setupNonMatchingPasswords();
 
-            teleportTo(handler.getConfig(sessionType + ".teleportation", false).toString());
-        } catch (final Exception e) {
-            player.kickPlayer(handler.getConfig("otherKickMessages.error", true).toString());
-            e.printStackTrace();
+            teleportTo(Handler.INSTANCE.getConfig(sessionType + ".teleportation", false).toString());
+            setupMovement();
+            setupVisibility();
+        } catch (final Exception exception) {
             destroySession();
+            exception.printStackTrace();
         }
     }
 
@@ -52,7 +54,7 @@ public class Session {
                     if (kickIA != null) {
                         IATries++;
                         if (IATries >= IAMaxTries) {
-                            handler.runTask(() -> player.kickPlayer(kickIA));
+                            Handler.INSTANCE.runTask(() -> player.kickPlayer(kickIA));
                             return;
                         }
                     }
@@ -64,7 +66,7 @@ public class Session {
                     if (kickNMP != null) {
                         NMPTries++;
                         if (NMPTries >= NMPMaxTries) {
-                            handler.runTask(() -> player.kickPlayer(kickNMP));
+                            Handler.INSTANCE.runTask(() -> player.kickPlayer(kickNMP));
                             return;
                         }
                     }
@@ -78,7 +80,7 @@ public class Session {
                             if (kickIA != null) {
                                 IATries++;
                                 if (IATries >= IAMaxTries) {
-                                    handler.runTask(() -> player.kickPlayer(kickIA));
+                                    Handler.INSTANCE.runTask(() -> player.kickPlayer(kickIA));
                                     return;
                                 }
                             }
@@ -89,34 +91,36 @@ public class Session {
                             if (kickWC != null) {
                                 WCTries++;
                                 if (WCTries >= WCMaxTries) {
-                                    handler.runTask(() -> player.kickPlayer(kickWC));
+                                    Handler.INSTANCE.runTask(() -> player.kickPlayer(kickWC));
                                     return;
                                 }
                             }
-                            player.sendMessage(WC);
+                            regenerateCaptcha();
+                            player.sendMessage(WC.replace("%captcha%", String.valueOf(captcha)));
                             return;
                         }
                     } catch (final NumberFormatException ignored) {
                         if (kickWC != null) {
                             WCTries++;
                             if (WCTries >= WCMaxTries) {
-                                handler.runTask(() -> player.kickPlayer(kickWC));
+                                Handler.INSTANCE.runTask(() -> player.kickPlayer(kickWC));
                                 return;
                             }
                         }
-                        player.sendMessage(WC);
+                        regenerateCaptcha();
+                        player.sendMessage(WC.replace("%captcha%", String.valueOf(captcha)));
                         return;
                     }
                 }
 
-                handler.writeData("playerData." + player.getUniqueId() + ".password", handler.getHashString(args[1]));
+                Handler.INSTANCE.writeData("playerData." + player.getUniqueId() + ".password", Handler.INSTANCE.getHashString(args[1]));
 
             } else if (sessionType.equals("login")) {
                 if (args.length == 0) {
                     if (kickIA != null) {
                         IATries++;
                         if (IATries >= IAMaxTries) {
-                            handler.runTask(() -> player.kickPlayer(kickIA));
+                            Handler.INSTANCE.runTask(() -> player.kickPlayer(kickIA));
                             return;
                         }
                     }
@@ -124,11 +128,11 @@ public class Session {
                     return;
                 }
 
-                if (!handler.getHashString(args[0]).equals(handler.getData("playerData." + player.getUniqueId() + ".password"))) {
+                if (!Handler.INSTANCE.getHashString(args[0]).equals(Handler.INSTANCE.getData("playerData." + player.getUniqueId() + ".password"))) {
                     if (kickIP != null) {
                         IPTries++;
                         if (IPTries >= IPMaxTries) {
-                            handler.runTask(() -> player.kickPlayer(kickIP));
+                            Handler.INSTANCE.runTask(() -> player.kickPlayer(kickIP));
                             return;
                         }
                     }
@@ -137,15 +141,15 @@ public class Session {
                 }
             }
 
+            teleportTo(Handler.INSTANCE.getConfig(sessionType + ".completed.teleportation", false).toString());
             player.sendMessage(C);
-            teleportTo(handler.getConfig(sessionType + ".completed.teleportation", false).toString());
-            if (Boolean.parseBoolean(handler.getConfig("protection.autologin.enabled", false).toString()))
-                handler.getSessionsHandler().saveSession(player);
+            if (Boolean.parseBoolean(Handler.INSTANCE.getConfig("protection.autologin.enabled", false).toString()))
+                SessionsHandler.INSTANCE.saveSession(player);
             destroySession();
         } catch (final Exception ex) {
-            handler.runTask(() -> player.kickPlayer(handler.getConfig("otherKickMessages.error", true).toString()));
-            ex.printStackTrace();
+            Handler.INSTANCE.runTask(() -> player.kickPlayer(Handler.INSTANCE.getConfig("otherKickMessages.error", true).toString()));
             destroySession();
+            ex.printStackTrace();
         }
     }
 
@@ -153,29 +157,44 @@ public class Session {
         return sessionType;
     }
 
+    @SuppressWarnings("deprecation")
     public void destroySession() {
         if (timeoutRunnable != null) {
-            timeoutRunnable.cancel();
+            timeoutRunnable.cancel(false);
             timeoutRunnable = null;
         }
         if (messageRunnable != null) {
-            messageRunnable.cancel();
+            messageRunnable.cancel(false);
             messageRunnable = null;
         }
         if (moveRunnable != null) {
-            moveRunnable.cancel();
+            moveRunnable.cancel(false);
             moveRunnable = null;
         }
 
-        sessionsHandler.deleteSession(uuid);
+        SessionsHandler.INSTANCE.deleteSession(player.getUniqueId());
+        if (player.isOnline() && (!canSeeOthers || !canOthersSee)) {
+            for (final Player p : PebbleLogin.INSTANCE.getServer().getOnlinePlayers()) {
+                if (!canOthersSee) {
+                    if (Handler.INSTANCE.isHighEndAPI())
+                        p.showPlayer(PebbleLogin.INSTANCE, player);
+                    else
+                        p.showPlayer(player);
+                }
+                if (!canSeeOthers){
+                    if (Handler.INSTANCE.isHighEndAPI())
+                        player.showPlayer(PebbleLogin.INSTANCE, p);
+                    else
+                        player.showPlayer(p);
+                }
+            }
+        }
         captcha = captchaMaxNumber = WCMaxTries = IAMaxTries = NMPMaxTries = IPMaxTries = WCTries = IATries = NMPTries = IPTries = 0;
         sessionType = WC = kickWC = IA = kickIA = NMP = kickNMP = IP = kickIP = C = null;
 
-        player = null;
-        handler = null;
+        random = null;
 
         System.gc();
-        System.runFinalization();
     }
 
     private void regenerateCaptcha() {
@@ -184,25 +203,19 @@ public class Session {
 
     private void setupRepetitiveMessage() {
         messageRunnable = null;
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".repetitiveMessage.enabled", false).toString())) {
-            messageRunnable = handler.runTaskTimer(new BukkitRunnable() {
-                @Override
-                public void run() {
-                    player.sendMessage(handler.getConfig(sessionType + ".repetitiveMessage.message", true).toString().replace("%captcha%", String.valueOf(captcha)));
-                }
-            }, Integer.parseInt(handler.getConfig(sessionType + ".repetitiveMessage.every", false).toString()));
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".repetitiveMessage.enabled", false).toString())) {
+            final String message = Handler.INSTANCE.getConfig(sessionType + ".repetitiveMessage.message", true).toString().replace("%captcha%", String.valueOf(captcha));
+            messageRunnable = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> player.sendMessage(message), 0, Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".repetitiveMessage.every", false).toString()), TimeUnit.SECONDS);
         }
     }
 
     private void setupMovement() {
-        if (!Boolean.parseBoolean(handler.getConfig("sessionRules.canMove", false).toString())) {
+        if (!Boolean.parseBoolean(Handler.INSTANCE.getConfig("sessionRules.canMove", false).toString())) {
             final Location location = player.getLocation();
-            moveRunnable = handler.runTaskTimer(new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (!player.getLocation().equals(location)) player.teleport(location);
-                }
-            }, 0.05);
+
+            moveRunnable = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+                if (!player.getLocation().equals(location)) Handler.INSTANCE.runTask(() -> player.teleport(location));
+            }, 0, 500, TimeUnit.MICROSECONDS);
         }
     }
 
@@ -213,25 +226,25 @@ public class Session {
         captchaMaxNumber = 0;
         captcha = 0;
         if (sessionType.equals("login")) return;
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".captcha.enabled", false).toString())) {
-            captchaMaxNumber = Integer.parseInt(handler.getConfig(sessionType + ".captcha.maxNumber", false).toString());
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".captcha.enabled", false).toString())) {
+            captchaMaxNumber = Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".captcha.maxNumber", false).toString());
             if (captchaMaxNumber <= 1) {
                 captchaMaxNumber = 0;
-                handler.sendSessionConsoleMessage("§cMax captcha number must be greater than 1, therefor captcha has been disabled for this session.", player.getName(), true);
+                Handler.INSTANCE.sendSessionConsoleMessage("§cMax captcha number must be greater than 1, therefor captcha has been disabled for this session.", player.getName(), true);
                 return;
             }
 
-            if (Boolean.parseBoolean(handler.getConfig(sessionType + ".captcha.tries.enabled", false).toString())) {
-                WCMaxTries = Integer.parseInt(handler.getConfig(sessionType + ".captcha.tries.tries", false).toString());
+            if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".captcha.tries.enabled", false).toString())) {
+                WCMaxTries = Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".captcha.tries.tries", false).toString());
                 if (WCMaxTries <= 0) {
                     WCMaxTries = 0;
-                    handler.sendSessionConsoleMessage("§cCaptcha tries must be greater than 0, therefor captcha has been disabled for this session.", player.getName(), true);
+                    Handler.INSTANCE.sendSessionConsoleMessage("§cCaptcha tries must be greater than 0, therefor captcha has been disabled for this session.", player.getName(), true);
                     return;
                 }
-                kickWC = handler.getConfig(sessionType + ".captcha.tries.kick-message", true).toString();
+                kickWC = Handler.INSTANCE.getConfig(sessionType + ".captcha.tries.kick-message", true).toString();
             }
 
-            WC = handler.getConfig(sessionType + ".captcha.incorrectMessage", true).toString();
+            WC = Handler.INSTANCE.getConfig(sessionType + ".captcha.incorrectMessage", true).toString();
             regenerateCaptcha();
             return;
         }
@@ -240,31 +253,28 @@ public class Session {
 
     private void setupTimeout() {
         timeoutRunnable = null;
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".timeout.enabled", false).toString())) {
-            final String timeout = handler.getConfig(sessionType + ".timeout.kick-message", true).toString();
-            timeoutRunnable = handler.runTaskLater(new BukkitRunnable() {
-                @Override
-                public void run() {
-                    player.kickPlayer(timeout);
-                    destroySession();
-                }
-            }, Integer.parseInt(handler.getConfig(sessionType + ".timeout.time", false).toString()));
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".timeout.enabled", false).toString())) {
+            final String timeout = Handler.INSTANCE.getConfig(sessionType + ".timeout.kick-message", true).toString();
+            timeoutRunnable = Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                Handler.INSTANCE.runTask(() -> player.kickPlayer(timeout));
+                destroySession();
+            }, Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".timeout.time", false).toString()), TimeUnit.SECONDS);
         }
     }
 
     private void setupIncorrectArguments() {
-        IA = handler.getConfig(sessionType + ".incorrectArguments.message", true).toString();
+        IA = Handler.INSTANCE.getConfig(sessionType + ".incorrectArguments.message", true).toString();
         kickIA = null;
         IAMaxTries = 0;
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".incorrectArguments.tries.enabled", false).toString())) {
-            IAMaxTries = Integer.parseInt(handler.getConfig(sessionType + ".incorrectArguments.tries.tries", false).toString());
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".incorrectArguments.tries.enabled", false).toString())) {
+            IAMaxTries = Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".incorrectArguments.tries.tries", false).toString());
             if (IAMaxTries <= 0) {
-                handler.sendSessionConsoleMessage("§cArgument tries must be greater than 0, therefor argument tries has been disabled for this session.", player.getName(), true);
+                Handler.INSTANCE.sendSessionConsoleMessage("§cArgument tries must be greater than 0, therefor argument tries has been disabled for this session.", player.getName(), true);
                 IAMaxTries = 0;
                 return;
             }
 
-            kickIA = handler.getConfig(sessionType + ".incorrectArguments.tries.kick-message", true).toString();
+            kickIA = Handler.INSTANCE.getConfig(sessionType + ".incorrectArguments.tries.kick-message", true).toString();
         }
     }
 
@@ -274,21 +284,21 @@ public class Session {
         NMPMaxTries = 0;
         if (sessionType.equals("login")) return;
 
-        NMP = handler.getConfig(sessionType + ".nonMatchingPasswords.message", true).toString();
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".nonMatchingPasswords.tries.enabled", false).toString())) {
-            NMPMaxTries = Integer.parseInt(handler.getConfig(sessionType + ".nonMatchingPasswords.tries.tries", false).toString());
+        NMP = Handler.INSTANCE.getConfig(sessionType + ".nonMatchingPasswords.message", true).toString();
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".nonMatchingPasswords.tries.enabled", false).toString())) {
+            NMPMaxTries = Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".nonMatchingPasswords.tries.tries", false).toString());
             if (NMPMaxTries <= 0) {
-                handler.sendSessionConsoleMessage("§cNon Matching Password tries must be greater than 0, therefor non matching password tries has been disabled for this session.", player.getName(), true);
+                Handler.INSTANCE.sendSessionConsoleMessage("§cNon Matching Password tries must be greater than 0, therefor non matching password tries has been disabled for this session.", player.getName(), true);
                 NMPMaxTries = 0;
                 return;
             }
 
-            kickNMP = handler.getConfig(sessionType + ".nonMatchingPasswords.tries.kick-message", true).toString();
+            kickNMP = Handler.INSTANCE.getConfig(sessionType + ".nonMatchingPasswords.tries.kick-message", true).toString();
         }
     }
 
     private void setupCompleted() {
-        C = handler.getConfig(sessionType + ".completed.message", true).toString();
+        C = Handler.INSTANCE.getConfig(sessionType + ".completed.message", true).toString();
     }
 
     private void setupIncorrectPassword() {
@@ -297,38 +307,62 @@ public class Session {
         IPMaxTries = 0;
         if (sessionType.equals("register")) return;
 
-        IP = handler.getConfig(sessionType + ".incorrectPassword.message", true).toString();
-        if (Boolean.parseBoolean(handler.getConfig(sessionType + ".incorrectPassword.tries.enabled", false).toString())) {
-            IPMaxTries = Integer.parseInt(handler.getConfig(sessionType + ".incorrectPassword.tries.tries", false).toString());
+        IP = Handler.INSTANCE.getConfig(sessionType + ".incorrectPassword.message", true).toString();
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig(sessionType + ".incorrectPassword.tries.enabled", false).toString())) {
+            IPMaxTries = Integer.parseInt(Handler.INSTANCE.getConfig(sessionType + ".incorrectPassword.tries.tries", false).toString());
             if (IPMaxTries <= 0) {
-                handler.sendSessionConsoleMessage("§cIncorrect Password tries must be greater than 0, therefor incorrect password tries has been disabled for this session.", player.getName(), true);
+                Handler.INSTANCE.sendSessionConsoleMessage("§cIncorrect Password tries must be greater than 0, therefor incorrect password tries has been disabled for this session.", player.getName(), true);
                 IPMaxTries = 0;
                 return;
             }
 
-            kickIP = handler.getConfig(sessionType + ".incorrectPassword.tries.kick-message", true).toString();
+            kickIP = Handler.INSTANCE.getConfig(sessionType + ".incorrectPassword.tries.kick-message", true).toString();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void setupVisibility() {
+        final PebbleLogin main = PebbleLogin.INSTANCE;
+        canOthersSee = Boolean.parseBoolean(Handler.INSTANCE.getConfig("sessionRules.canOthersSee", false).toString());
+        canSeeOthers = Boolean.parseBoolean(Handler.INSTANCE.getConfig("sessionRules.canSeeOthers", false).toString());
+        if (!canSeeOthers || !canOthersSee) {
+            for (final Player p : main.getServer().getOnlinePlayers()) {
+                if (!canOthersSee) {
+                    if (Handler.INSTANCE.isHighEndAPI())
+                        p.hidePlayer(main, player);
+                    else
+                        p.hidePlayer(player);
+                }
+                if (!canSeeOthers){
+                    if (Handler.INSTANCE.isHighEndAPI())
+                        player.hidePlayer(main, p);
+                    else
+                        player.hidePlayer(p);
+                }
+            }
         }
     }
 
     private void teleportTo(final String teleportation) {
-        Object o;
-        if (teleportation.equals("lobby")) {
-            o = handler.getData("locations.lobby");
-            if (o instanceof Location) player.teleport((Location) o);
-            return;
-        }
+        new Thread(() -> {
+            Object o;
+            if (teleportation.equals("lobby")) {
+                o = Handler.INSTANCE.getData("locations.lobby");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+                return;
+            }
 
-        if (teleportation.equals("login")) {
-            o = handler.getData("locations.login");
-            if (o instanceof Location) player.teleport((Location) o);
-            return;
-        }
+            if (teleportation.equals("login")) {
+                o = Handler.INSTANCE.getData("locations.login");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+                return;
+            }
 
-        if (teleportation.equals("saved")) {
-            o = handler.getData("playerData." + player.getUniqueId() + ".savedLocation");
-            if (o instanceof Location) player.teleport((Location) o);
-        }
+            if (teleportation.equals("saved")) {
+                o = Handler.INSTANCE.getData("playerData." + player.getUniqueId() + ".savedLocation");
+                if (o instanceof Location) Handler.INSTANCE.runTask(() -> player.teleport((Location) o));
+            }
+        }).start();
     }
-
 }
 

@@ -12,15 +12,13 @@ public class ConsoleFilter implements Filter {
 
     private boolean started;
     private boolean stopped;
-    private final Handler handler;
 
-    public ConsoleFilter(final Handler handler) {
-        this.handler = handler;
+    public ConsoleFilter() {
         ((Logger) LogManager.getRootLogger()).addFilter(this);
     }
 
     private Result getResult(final String message) {
-        if (Boolean.parseBoolean(handler.getConfig("protection.consoleFilter", false).toString())) {
+        if (Boolean.parseBoolean(Handler.INSTANCE.getConfig("protection.consoleFilter", false).toString())) {
             if (message.contains("issued server command: /login") || message.contains("issued server command: /register")) return Result.DENY;
         }
         return Result.NEUTRAL;

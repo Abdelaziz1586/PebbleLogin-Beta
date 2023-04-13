@@ -9,22 +9,14 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 public class EntityDamage implements Listener {
 
-    private final Handler handler;
-    private final SessionsHandler sessionsHandler;
-
-    public EntityDamage(final Handler handler) {
-        this.handler = handler;
-        sessionsHandler = handler.getSessionsHandler();
-    }
-
     @EventHandler
     public void onEntityDamage(final EntityDamageEvent event) {
-        handler.runTask(() -> {
+        Handler.INSTANCE.runTask(() -> {
             if (event instanceof EntityDamageByEntityEvent entityEvent) {
-                if (sessionsHandler.getSession(entityEvent.getDamager().getUniqueId()) != null && !Boolean.parseBoolean(handler.getConfig("sessionRules.canDamage", false).toString())) event.setCancelled(true);
+                if (SessionsHandler.INSTANCE.getSession(entityEvent.getDamager().getUniqueId()) != null && !Boolean.parseBoolean(Handler.INSTANCE.getConfig("sessionRules.canDamage", false).toString())) event.setCancelled(true);
                 return;
             }
-            if (sessionsHandler.getSession(event.getEntity().getUniqueId()) != null && !Boolean.parseBoolean(handler.getConfig("sessionRules.canGetDamaged", false).toString())) event.setCancelled(true);
+            if (SessionsHandler.INSTANCE.getSession(event.getEntity().getUniqueId()) != null && !Boolean.parseBoolean(Handler.INSTANCE.getConfig("sessionRules.canGetDamaged", false).toString())) event.setCancelled(true);
         });
     }
 

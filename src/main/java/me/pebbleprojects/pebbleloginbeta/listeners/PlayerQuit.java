@@ -12,23 +12,15 @@ import java.util.UUID;
 
 public class PlayerQuit implements Listener {
 
-    private final Handler handler;
-    private final SessionsHandler sessionsHandler;
-
-    public PlayerQuit(final Handler handler) {
-        this.handler = handler;
-        sessionsHandler = handler.getSessionsHandler();
-    }
-
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        handler.runTask(() -> {
+        new Thread(() -> {
             final Player player = event.getPlayer();
             final UUID uuid = player.getUniqueId();
-            final Session session = sessionsHandler.getSession(uuid);
+            final Session session = SessionsHandler.INSTANCE.getSession(uuid);
             if (session != null) session.destroySession();
-            handler.writeData("playerData." + uuid + ".savedLocation", player.getLocation());
-        });
+            Handler.INSTANCE.writeData("playerData." + uuid + ".savedLocation", player.getLocation());
+        }).start();
     }
 
 }

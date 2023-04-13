@@ -21,19 +21,20 @@ import java.util.Objects;
 public class Handler {
 
     private final File dataFile;
-    private final PebbleLogin main;
+    public static Handler INSTANCE;
     private MessageDigest hashData;
+    private final boolean highEndAPI;
     private FileConfiguration data, config;
     private final ConsoleCommandSender console;
-    private final SessionsHandler sessionsHandler;
 
-    public Handler(final PebbleLogin main) {
-        this.main = main;
-        console = main.getServer().getConsoleSender();
-        main.getConfig().options().copyDefaults(true);
-        main.saveDefaultConfig();
+    public Handler() {
+        INSTANCE = this;
+        highEndAPI = Integer.parseInt(PebbleLogin.INSTANCE.getServer().getBukkitVersion().split("\\.")[1].split("\\.")[0]) >= 13;
+        console = PebbleLogin.INSTANCE.getServer().getConsoleSender();
+        PebbleLogin.INSTANCE.getConfig().options().copyDefaults(true);
+        PebbleLogin.INSTANCE.saveDefaultConfig();
         updateConfig();
-        dataFile = new File(main.getDataFolder().getPath(), "data.yml");
+        dataFile = new File(PebbleLogin.INSTANCE.getDataFolder().getPath(), "data.yml");
         if (!dataFile.exists()) {
             try {
                 if (dataFile.createNewFile()) {
@@ -45,6 +46,7 @@ public class Handler {
         }
         updateData();
 
+        new SessionsHandler();
         final String hashType = Boolean.parseBoolean(getConfig("protection.hashData.enabled", false).toString()) ? getConfig("protection.hashData.type", false).toString() : null;
         hashData = null;
         if (hashType != null) {
@@ -55,29 +57,28 @@ public class Handler {
             }
         }
 
-        sessionsHandler = new SessionsHandler(this);
 
-        final PluginManager pm = main.getServer().getPluginManager();
-        pm.registerEvents(new PlayerJoin(this), main);
-        pm.registerEvents(new PlayerQuit(this), main);
-        pm.registerEvents(new BlockBreak(this), main);
-        pm.registerEvents(new BlockPlace(this), main);
-        pm.registerEvents(new EntityDamage(this), main);
-        pm.registerEvents(new AsyncPlayerChat(this), main);
-        pm.registerEvents(new FoodLevelChange(this), main);
-        pm.registerEvents(new PlayerCommandPreprocess(this), main);
+        final PluginManager pm = PebbleLogin.INSTANCE.getServer().getPluginManager();
+        pm.registerEvents(new PlayerJoin(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new PlayerQuit(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new BlockBreak(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new BlockPlace(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new EntityDamage(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new AsyncPlayerChat(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new FoodLevelChange(), PebbleLogin.INSTANCE);
+        pm.registerEvents(new PlayerCommandPreprocess(), PebbleLogin.INSTANCE);
 
-        final Commands commands = new Commands(this);
-        Objects.requireNonNull(main.getCommand("login")).setExecutor(commands);
-        Objects.requireNonNull(main.getCommand("register")).setExecutor(commands);
-        Objects.requireNonNull(main.getCommand("pebblelogin")).setExecutor(commands);
+        final Commands commands = new Commands();
+        Objects.requireNonNull(PebbleLogin.INSTANCE.getCommand("login")).setExecutor(commands);
+        Objects.requireNonNull(PebbleLogin.INSTANCE.getCommand("register")).setExecutor(commands);
+        Objects.requireNonNull(PebbleLogin.INSTANCE.getCommand("pebblelogin")).setExecutor(commands);
 
-        new ConsoleFilter(this);
+        new ConsoleFilter();
     }
 
     public void updateConfig() {
-        main.reloadConfig();
-        config = main.getConfig();
+        PebbleLogin.INSTANCE.reloadConfig();
+        config = PebbleLogin.INSTANCE.getConfig();
     }
 
     public void updateData() {
@@ -108,20 +109,10 @@ public class Handler {
                 public void run() {
                     runnable.run();
                 }
-            }.runTask(main);
+            }.runTask(PebbleLogin.INSTANCE);
             return;
         }
         runnable.run();
-    }
-
-    public final BukkitRunnable runTaskLater(final BukkitRunnable runnable, final int delay) {
-        runnable.runTaskLater(main, delay*20L);
-        return runnable;
-    }
-
-    public final BukkitRunnable runTaskTimer(final BukkitRunnable runnable, final double delay) {
-        runnable.runTaskTimer(main, 0, (long) (delay*20));
-        return runnable;
     }
 
     public final String getHashString(final String input) {
@@ -157,7 +148,7 @@ public class Handler {
         return null;
     }
 
-    public final SessionsHandler getSessionsHandler() {
-        return sessionsHandler;
+    public boolean isHighEndAPI() {
+        return highEndAPI;
     }
 }

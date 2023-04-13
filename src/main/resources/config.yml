@@ -16,7 +16,7 @@ protection:
     sessionDuration: 120 # Any value less than or equal to 0 will be marked as an unlimited session, even after restart (Value in seconds)
     teleportation: lobby
     message: "&aYou have been AutoLogged in!"
-  consoleFilter: true
+  consoleFilter: true # Strongly recommended, as this will remove any traces of the player's password in console.
   # More soon. Have suggestions? Message me on discord! CZY BINKIE#2620
 
 sessionRules:
@@ -25,6 +25,8 @@ sessionRules:
   canBreak: false
   canPlace: false
   canDamage: false
+  canOthersSee: false # Can other players see the player during the login session
+  canSeeOthers: false # Can the player see other players during the login session
   canGetHungry: false
   canGetDamaged: false
   canExecuteOtherCommands: false
