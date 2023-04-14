@@ -1,12 +1,14 @@
 package me.pebbleprojects.pebbleloginbeta.engine;
 
+import org.bukkit.entity.Player;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.CommandExecutor;
+
+import org.jetbrains.annotations.NotNull;
+
 import me.pebbleprojects.pebbleloginbeta.engine.sessions.Session;
 import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class Commands implements CommandExecutor {
 
@@ -46,7 +48,6 @@ public class Commands implements CommandExecutor {
                     player.sendMessage(Handler.INSTANCE.getConfig("commandMessages.not_in_session", true).toString());
                     return;
                 }
-
 
                 if (!s.equals(session.getSessionType())) {
                     player.sendMessage(Handler.INSTANCE.getConfig("commandMessages.not_in_" + s + "_session", true).toString());

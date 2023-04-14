@@ -1,14 +1,15 @@
 package me.pebbleprojects.pebbleloginbeta.engine.sessions;
 
-import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+
+import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
+import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 
 public class Session implements Runnable {
 
@@ -21,24 +22,26 @@ public class Session implements Runnable {
 
     public Session(final Player player) {
         this.player = player;
+        random = new Random();
         new Thread(this).start();
     }
 
     @Override
     public void run() {
         try {
-            random = new Random();
             sessionType = Handler.INSTANCE.getData("playerData." + player.getUniqueId() + ".password") == null ? "register" : "login";
+
+            teleportTo(Handler.INSTANCE.getConfig(sessionType + ".teleportation", false).toString());
 
             setupCaptcha();
             setupTimeout();
+            setupMovement();
             setupCompleted();
+            setupVisibility();
             setupRepetitiveMessage();
             setupIncorrectPassword();
             setupIncorrectArguments();
             setupNonMatchingPasswords();
-
-            teleportTo(Handler.INSTANCE.getConfig(sessionType + ".teleportation", false).toString());
             setupMovement();
             setupVisibility();
         } catch (final Exception exception) {

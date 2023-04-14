@@ -1,12 +1,13 @@
 package me.pebbleprojects.pebbleloginbeta.listeners;
 
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
-import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
+
+import me.pebbleprojects.pebbleloginbeta.engine.Handler;
+import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
 
 public class PlayerJoin implements Listener {
 

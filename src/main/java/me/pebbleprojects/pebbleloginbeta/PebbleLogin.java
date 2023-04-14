@@ -1,13 +1,13 @@
 package me.pebbleprojects.pebbleloginbeta;
 
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
-import me.pebbleprojects.pebbleloginbeta.listeners.AsyncPlayerPreLogin;
-import org.bukkit.Server;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+
+import me.pebbleprojects.pebbleloginbeta.engine.Handler;
+import me.pebbleprojects.pebbleloginbeta.listeners.AsyncPlayerPreLogin;
 
 public final class PebbleLogin extends JavaPlugin {
 
@@ -18,21 +18,19 @@ public final class PebbleLogin extends JavaPlugin {
     public void onEnable() {
         INSTANCE = this;
         loaded = false;
-        final Server server = getServer();
-        server.getPluginManager().registerEvents(new AsyncPlayerPreLogin(), this);
+        getServer().getPluginManager().registerEvents(new AsyncPlayerPreLogin(), this);
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            final ConsoleCommandSender console = server.getConsoleSender();
-            console.sendMessage("§eLoading §bPebbleLogin§f-§bBETA§e...");
+            final Logger console = getLogger();
+            console.info("§eLoading §bPebbleLogin§e...");
             new Handler();
-            console.sendMessage("§aLoaded §bPebbleLogin§f-§bBETA");
+            console.info("§aLoaded §bPebbleLogin");
             loaded = true;
         }, 1, TimeUnit.SECONDS);
-
     }
 
     @Override
     public void onDisable() {
-        getServer().getConsoleSender().sendMessage("§cUnloaded §bPebbleLogin§f-§bBETA");
+        getLogger().info("§cUnloaded §bPebbleLogin");
     }
 
     public boolean isLoaded() {

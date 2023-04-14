@@ -1,22 +1,23 @@
 package me.pebbleprojects.pebbleloginbeta.engine;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.util.Objects;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+
 import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
 import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
 import me.pebbleprojects.pebbleloginbeta.listeners.*;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
 public class Handler {
 
@@ -25,12 +26,12 @@ public class Handler {
     private MessageDigest hashData;
     private final boolean highEndAPI;
     private FileConfiguration data, config;
-    private final ConsoleCommandSender console;
+    private final Logger logger;
 
     public Handler() {
         INSTANCE = this;
         highEndAPI = Integer.parseInt(PebbleLogin.INSTANCE.getServer().getBukkitVersion().split("\\.")[1].split("\\.")[0]) >= 13;
-        console = PebbleLogin.INSTANCE.getServer().getConsoleSender();
+        logger = PebbleLogin.INSTANCE.getLogger();
         PebbleLogin.INSTANCE.getConfig().options().copyDefaults(true);
         PebbleLogin.INSTANCE.saveDefaultConfig();
         updateConfig();
@@ -38,7 +39,7 @@ public class Handler {
         if (!dataFile.exists()) {
             try {
                 if (dataFile.createNewFile()) {
-                    console.sendMessage("§aCreated §edata.yml");
+                    logger.info("§aCreated §edata.yml");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -47,16 +48,16 @@ public class Handler {
         updateData();
 
         new SessionsHandler();
+
         final String hashType = Boolean.parseBoolean(getConfig("protection.hashData.enabled", false).toString()) ? getConfig("protection.hashData.type", false).toString() : null;
         hashData = null;
         if (hashType != null) {
             try {
                 hashData = MessageDigest.getInstance(hashType);
             } catch (final NoSuchAlgorithmException ignored) {
-                console.sendMessage("§cCouldn't find hash type §e" + hashType);
+                logger.info("§cCouldn't find hash type §e" + hashType);
             }
         }
-
 
         final PluginManager pm = PebbleLogin.INSTANCE.getServer().getPluginManager();
         pm.registerEvents(new PlayerJoin(), PebbleLogin.INSTANCE);
@@ -96,10 +97,10 @@ public class Handler {
 
     public void sendSessionConsoleMessage(final String message, final String sessionPlayer, final boolean isError) {
         if (isError) {
-            console.sendMessage("§f[PebbleLogin Session] §cSession of §e" + sessionPlayer + " §chas ran into an error, details:\n\n" + message);
+            logger.severe("§cSession of §e" + sessionPlayer + " §chas ran into an error, details:\n\n" + message);
             return;
         }
-        console.sendMessage("§f[PebbleLogin Session] §bMessage from session of §e" + sessionPlayer + "§b: §r" + message);
+        logger.info("§bMessage from session of §e" + sessionPlayer + "§b: §r" + message);
     }
 
     public void runTask(final Runnable runnable) {

@@ -1,11 +1,12 @@
 package me.pebbleprojects.pebbleloginbeta.listeners;
 
+import org.bukkit.event.Listener;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+
 import me.pebbleprojects.pebbleloginbeta.engine.Handler;
 import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 public class EntityDamage implements Listener {
 
