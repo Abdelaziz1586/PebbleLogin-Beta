@@ -1,10 +1,10 @@
-package me.pebbleprojects.pebbleloginbeta.listeners;
+package me.pebbleprojects.pebblelogin.listeners;
 
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
-import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
+import me.pebbleprojects.pebblelogin.PebbleLogin;
 
 public class AsyncPlayerPreLogin implements Listener {
 

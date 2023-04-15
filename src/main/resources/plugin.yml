@@ -1,7 +1,7 @@
-version: '1.0.6'
+version: '1.0.8'
 name: PebbleLogin
 prefix: PebbleLogin
-main: me.pebbleprojects.pebbleloginbeta.PebbleLogin
+main: me.pebbleprojects.pebblelogin.PebbleLogin
 api-version: 1.13
 authors: [PebbleProjects]
 description: An advanced login system for Bukkit server.

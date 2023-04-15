@@ -1,10 +1,10 @@
-package me.pebbleprojects.pebbleloginbeta.engine.sessions;
+package me.pebbleprojects.pebblelogin.engine.sessions;
 
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
+import me.pebbleprojects.pebblelogin.engine.Handler;
 
 public class SessionsHandler {
 

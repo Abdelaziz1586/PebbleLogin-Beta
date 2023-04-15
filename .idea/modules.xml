@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PebbleLogin-Beta.iml" filepath="$PROJECT_DIR$/PebbleLogin-Beta.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PebbleLogin.iml" filepath="$PROJECT_DIR$/PebbleLogin.iml" />
     </modules>
   </component>
 </project>

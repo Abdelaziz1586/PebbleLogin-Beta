@@ -1,4 +1,4 @@
-package me.pebbleprojects.pebbleloginbeta.engine;
+package me.pebbleprojects.pebblelogin.engine;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,18 +15,18 @@ import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 
-import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
-import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
-import me.pebbleprojects.pebbleloginbeta.listeners.*;
+import me.pebbleprojects.pebblelogin.PebbleLogin;
+import me.pebbleprojects.pebblelogin.engine.sessions.SessionsHandler;
+import me.pebbleprojects.pebblelogin.listeners.*;
 
 public class Handler {
 
     private final File dataFile;
-    public static Handler INSTANCE;
+    private final Logger logger;
     private MessageDigest hashData;
+    public static Handler INSTANCE;
     private final boolean highEndAPI;
     private FileConfiguration data, config;
-    private final Logger logger;
 
     public Handler() {
         INSTANCE = this;

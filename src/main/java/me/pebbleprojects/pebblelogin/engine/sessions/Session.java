@@ -1,4 +1,4 @@
-package me.pebbleprojects.pebbleloginbeta.engine.sessions;
+package me.pebbleprojects.pebblelogin.engine.sessions;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 
-import me.pebbleprojects.pebbleloginbeta.PebbleLogin;
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
+import me.pebbleprojects.pebblelogin.PebbleLogin;
+import me.pebbleprojects.pebblelogin.engine.Handler;
 
 public class Session implements Runnable {
 

@@ -1,4 +1,4 @@
-package me.pebbleprojects.pebbleloginbeta.listeners;
+package me.pebbleprojects.pebblelogin.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -6,8 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import me.pebbleprojects.pebbleloginbeta.engine.Handler;
-import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
+import me.pebbleprojects.pebblelogin.engine.Handler;
+import me.pebbleprojects.pebblelogin.engine.sessions.SessionsHandler;
 
 public class PlayerJoin implements Listener {
 

@@ -1,4 +1,4 @@
-package me.pebbleprojects.pebbleloginbeta.engine;
+package me.pebbleprojects.pebblelogin.engine;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.Command;
@@ -7,8 +7,8 @@ import org.bukkit.command.CommandExecutor;
 
 import org.jetbrains.annotations.NotNull;
 
-import me.pebbleprojects.pebbleloginbeta.engine.sessions.Session;
-import me.pebbleprojects.pebbleloginbeta.engine.sessions.SessionsHandler;
+import me.pebbleprojects.pebblelogin.engine.sessions.Session;
+import me.pebbleprojects.pebblelogin.engine.sessions.SessionsHandler;
 
 public class Commands implements CommandExecutor {
 

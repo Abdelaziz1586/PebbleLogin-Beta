@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.pebbleprojects</groupId>
-    <artifactId>PebbleLogin-Beta</artifactId>
-    <version>1.0.6</version>
+    <artifactId>PebbleLogin</artifactId>
+    <version>1.0.8</version>
     <packaging>jar</packaging>
 
-    <name>PebbleLogin-Beta</name>
+    <name>PebbleLogin</name>
 
     <description>An advanced login system for Bukkit server.</description>
     <properties>
